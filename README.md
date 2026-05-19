@@ -45,7 +45,7 @@ The persona is **Mei**, a part-time LP with ~$5k across 2–3 Aerodrome pools wh
 | Receipt minting + public pages | ✅ `/r/<hash>` with OG images |
 | Next.js dashboard | ✅ prod build passes |
 | wagmi + RainbowKit wallet connect | ✅ |
-| `KairoPolicy.sol` deployed to Base Sepolia | ⏳ deploying this week |
+| `KairoPolicy.sol` deployed to Base Sepolia | ✅ [`0xE080…B13A`](https://sepolia.basescan.org/address/0xE08065110d0d7E63582942447973f895bC35B13A) |
 | Telegram approval bot via Aomi runtime | ⏳ week 2 |
 | MCP server for any-agent integration | ⏳ week 2 |
 | ERC-8004 agent identity | ⏳ week 2 |

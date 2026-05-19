@@ -40,3 +40,9 @@ coverage
 # rust (for plugins/aerodrome later)
 target
 Cargo.lock
+
+# foundry
+contracts/cache
+contracts/out
+# keep contracts/broadcast — it records canonical deployments
+
