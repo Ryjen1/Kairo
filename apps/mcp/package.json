@@ -1,0 +1,26 @@
+{
+  "name": "@kairo/mcp",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Kairo MCP server — lets any agent (Cursor, Claude Code, ElizaOS, OpenClaw, Nanobot) check Aerodrome actions against a Kairo policy before executing.",
+  "bin": {
+    "kairo-mcp": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kairo/policy": "workspace:*",
+    "@kairo/sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "viem": "^2.21.40",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Core surface tokens (cinematic dark) */
+    --background: 220 20% 4%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 18% 7%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 18% 7%;
+    --popover-foreground: 210 20% 95%;
+
+    --primary: 162 72% 46%;
+    --primary-foreground: 220 20% 4%;
+
+    --secondary: 220 16% 12%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 220 14% 14%;
+    --muted-foreground: 215 14% 50%;
+
+    --accent: 162 72% 46%;
+    --accent-foreground: 220 20% 4%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 14% 14%;
+    --input: 220 14% 16%;
+    --ring: 162 72% 46%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens for Kairo */
+    --emerald: 162 72% 46%;
+    --emerald-glow: 162 72% 56%;
+    --emerald-muted: 162 40% 20%;
+    --surface-1: 220 18% 7%;
+    --surface-2: 220 16% 10%;
+    --surface-3: 220 14% 14%;
+    --warn: 36 95% 60%;
+    --deny: 0 72% 61%;
+
+    /* Legacy aliases used by older Kairo components (mapped to new tokens) */
+    --bg: var(--background);
+    --surface: var(--surface-1);
+    --text: var(--foreground);
+    --text-dim: var(--muted-foreground);
+    --line: var(--border);
+    --accent-fg: var(--accent-foreground);
+    --warn-fg: var(--background);
+    --deny-fg: var(--background);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(162 72% 46%) 0%, hsl(172 66% 50%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(220 20% 4%) 0%, hsl(220 24% 6%) 50%, hsl(220 20% 4%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(220 18% 8%) 0%, hsl(220 18% 6%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(162 72% 46% / 0.08) 0%, transparent 70%);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 12px hsl(0 0% 0% / 0.4);
+    --shadow-lg: 0 8px 30px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 40px hsl(162 72% 46% / 0.15);
+    --shadow-glow-sm: 0 0 20px hsl(162 72% 46% / 0.1);
+
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html,
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  .font-mono,
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  /* Glass card — the signature SolSend surface, adopted into Kairo */
+  .glass-card {
+    background: hsl(var(--surface-1));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Legacy card aliases — keep existing components working */
+  .card {
+    @apply glass-card;
+  }
+  .card-2 {
+    background: hsl(var(--surface-2));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+
+  /* Pulse glow — for live indicators / active states */
+  .pulse-glow {
+    animation: pulseGlow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 20px hsl(162 72% 46% / 0.1); }
+    50% { box-shadow: 0 0 40px hsl(162 72% 46% / 0.2); }
+  }
+
+  /* Shimmer — loading skeletons */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--surface-2)) 0%,
+      hsl(var(--surface-3)) 50%,
+      hsl(var(--surface-2)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Status badges — Kairo-specific status palette */
+  .status-auto-approved,
+  .status-approved {
+    background: hsl(162 72% 46% / 0.1);
+    color: hsl(162 72% 56%);
+    border: 1px solid hsl(162 72% 46% / 0.2);
+  }
+  .status-pending {
+    background: hsl(36 95% 50% / 0.1);
+    color: hsl(36 95% 65%);
+    border: 1px solid hsl(36 95% 50% / 0.2);
+  }
+  .status-denied,
+  .status-blocked {
+    background: hsl(0 72% 51% / 0.1);
+    color: hsl(0 72% 65%);
+    border: 1px solid hsl(0 72% 51% / 0.2);
+  }
+  .status-executed {
+    background: hsl(217 91% 60% / 0.1);
+    color: hsl(217 91% 70%);
+    border: 1px solid hsl(217 91% 60% / 0.2);
+  }
+  .status-expired {
+    background: hsl(220 14% 30% / 0.2);
+    color: hsl(215 14% 60%);
+    border: 1px solid hsl(220 14% 30% / 0.3);
+  }
+
+  /* Type badges — for proposal kinds */
+  .type-rebalance {
+    background: hsl(217 91% 60% / 0.1);
+    color: hsl(217 91% 70%);
+    border: 1px solid hsl(217 91% 60% / 0.2);
+  }
+  .type-claim {
+    background: hsl(162 72% 46% / 0.1);
+    color: hsl(162 72% 56%);
+    border: 1px solid hsl(162 72% 46% / 0.2);
+  }
+  .type-swap {
+    background: hsl(280 67% 55% / 0.1);
+    color: hsl(280 67% 70%);
+    border: 1px solid hsl(280 67% 55% / 0.2);
+  }
+  .type-vote {
+    background: hsl(45 93% 47% / 0.1);
+    color: hsl(45 93% 62%);
+    border: 1px solid hsl(45 93% 47% / 0.2);
+  }
+
+  /* Subtle grid pattern background — adds depth without distraction */
+  .grid-pattern {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.3) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Hero radial glow — anchor behind the hero text */
+  .hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-glow::before {
+    content: "";
+    width: 500px;
+    height: 300px;
+    border-radius: 9999px;
+    background: hsl(var(--primary) / 0.05);
+    filter: blur(100px);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  /* Legacy color aliases used by older Kairo components */
+  .text-accent { color: hsl(var(--accent)); }
+  .text-accent-fg { color: hsl(var(--accent-foreground)); }
+  .bg-accent { background-color: hsl(var(--accent)); }
+  .text-text { color: hsl(var(--foreground)); }
+  .text-text-dim { color: hsl(var(--muted-foreground)); }
+  .bg-bg { background-color: hsl(var(--background)); }
+  .bg-surface { background-color: hsl(var(--surface-1)); }
+  .bg-surface-2 { background-color: hsl(var(--surface-2)); }
+  .border-line { border-color: hsl(var(--border)); }
+  .text-warn { color: hsl(var(--warn)); }
+  .text-deny { color: hsl(var(--deny)); }
+}

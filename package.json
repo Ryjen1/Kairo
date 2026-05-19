@@ -1,0 +1,29 @@
+{
+  "name": "kairo",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Consent and policy layer for autonomous crypto agents on Base.",
+  "packageManager": "pnpm@10.28.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "anvil:fork": "anvil --fork-url ${BASE_RPC_URL:-https://mainnet.base.org} --chain-id 8453 --port 8545",
+    "steward": "pnpm --filter steward start",
+    "smoke:aerodrome": "tsx scripts/smoke-aerodrome.ts",
+    "smoke:api": "tsx scripts/smoke-api.ts",
+    "seed:demo": "tsx scripts/seed-demo-receipts.ts",
+    "rogue": "tsx scripts/rogue-steward.ts",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.22.1",
+    "typescript": "^5.6.3"
+  }
+}

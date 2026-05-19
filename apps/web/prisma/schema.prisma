@@ -1,0 +1,57 @@
+// Kairo storage schema. SQLite for dev, Vercel KV/Postgres for prod later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Policy {
+  id         String   @id @default(cuid())
+  wallet     String
+  agentId    String
+  mode       String
+  rules      String // JSON-encoded PolicyRules
+  updatedAt  DateTime @default(now()) @updatedAt
+  createdAt  DateTime @default(now())
+
+  receipts   Receipt[]
+
+  @@unique([wallet, agentId])
+  @@index([wallet])
+}
+
+model Receipt {
+  hash             String   @id
+  wallet           String
+  agentId          String
+  proposalKind     String
+  proposalJson     String // JSON-encoded Proposal
+  policyJson       String // JSON-encoded Policy snapshot
+  decisionJson     String // JSON-encoded Decision
+  status           String
+  decisionActor    String
+  finalizedAt      DateTime
+  txHash           String?
+  createdAt        DateTime @default(now())
+
+  policyId         String?
+  policy           Policy?  @relation(fields: [policyId], references: [id], onDelete: SetNull)
+
+  @@index([wallet, finalizedAt])
+  @@index([wallet, agentId, finalizedAt])
+}
+
+model AgentInstall {
+  id         String   @id @default(cuid())
+  wallet     String
+  agentId    String
+  installedAt DateTime @default(now())
+  active     Boolean  @default(true)
+
+  @@unique([wallet, agentId])
+  @@index([wallet])
+}

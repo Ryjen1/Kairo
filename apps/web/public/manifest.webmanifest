@@ -1,0 +1,12 @@
+{
+  "name": "Kairo — Aerodrome Safe LP Agent",
+  "short_name": "Kairo",
+  "description": "Consent and policy for autonomous LP management on Base.",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0B0B0E",
+  "background_color": "#0B0B0E",
+  "categories": ["finance", "productivity", "utilities"]
+}
