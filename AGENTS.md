@@ -4,7 +4,7 @@ Read this first if you (Kilo or another agent) are picking up work on this repo.
 
 ## What this project is
 
-Kairo is the consent and policy layer for autonomous crypto agents on Base. Built for the OpenPandora Early Forge bounty targeting the Aerodrome track.
+Kairo is the consent and policy layer for autonomous crypto agents on Base, anchored on Aerodrome. The project is hackathon-portable — frame it generally; never bake a specific hackathon name into product copy or marketing.
 
 The single source of truth is `docs/PRODUCT.md`. The persona is **Mei**, a part-time Aerodrome LP. Every UX decision should ask "would Mei understand this?"
 

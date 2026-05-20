@@ -265,7 +265,7 @@ export default function LandingPage() {
       <footer className="container relative border-t border-border/50 py-10 text-sm text-muted-foreground">
         <div className="flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
           <Logo />
-          <div>Built for the OpenPandora Early Forge · Aerodrome track</div>
+          <div>Aerodrome Safe LP Agent · Built on Base</div>
         </div>
       </footer>
     </div>

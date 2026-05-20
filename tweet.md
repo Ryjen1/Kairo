@@ -1,5 +1,7 @@
 # Launch tweet variants
 
+Hackathon-neutral. Use the version that fits the venue.
+
 ## Primary thread (5 tweets)
 
 **1/**
@@ -56,14 +58,14 @@ If our server cheats, you can verify on Basescan.
 ---
 
 **5/**
-Built on Base. Native to @aerodromefi. Aligned with @aomi_labs's simulation
-runtime. Every action gets a receipt; every receipt is a shareable URL.
+Built on @base. Native to @aerodromefi. Portable across agent runtimes via
+MCP — any agent (Claude, Cursor, ElizaOS) can ask Kairo "would this action
+be allowed?" before broadcasting.
 
 Live demo → kairo.dev
-Code → github.com/[org]/kairo
-Built for @DecentralDev_ × @base Early Forge
+Code → github.com/Ryjen1/Kairo
 
-cc @aomi_labs @aerodromefi @base
+cc @aerodromefi @base
 
 ---
 
@@ -81,12 +83,12 @@ thresholds — enforced on-chain on Base.
 
 ---
 
-## Reply-to-Aomi tweet (for amplification)
+## Reply / quote-tweet variant (for amplification)
 
-@aomi_labs we built Kairo for the Aerodrome track — an LP autopilot that
-runs inside a policy you sign and verify on-chain.
+We built Kairo — an Aerodrome LP autopilot that runs inside a policy you
+sign and verify on-chain.
 
-Steward reads gauge weights, proposes rebalances, every action goes through
-your leash before it touches your wallet.
+Steward reads gauge weights, proposes rebalances, and every action goes
+through your leash before it touches your wallet.
 
 Demo: kairo.dev

@@ -46,3 +46,6 @@ contracts/cache
 contracts/out
 # keep contracts/broadcast — it records canonical deployments
 
+# typescript build info
+*.tsbuildinfo
+

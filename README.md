@@ -2,9 +2,7 @@
 
 > **Aerodrome Safe LP Agent** · Your agent acts. Kairo decides.
 
-Kairo is the consent and policy layer for autonomous LP management on Base. A user installs the **Aerodrome Steward** agent, sets a leash in plain English ("rebalance up to $500, only into vetted pools, only if APR uplift beats 4%"), and Kairo enforces it. Every decision lands as a public, verifiable receipt.
-
-Built for the **[OpenPandora Early Forge](https://aomi.dev)** — Aerodrome track.
+Kairo is a consent and policy layer for autonomous LP management on Base. A user installs the **Aerodrome Steward** agent, sets a leash in plain English ("rebalance up to $500, only into vetted pools, only if APR uplift beats 4%"), and Kairo enforces it. Every decision lands as a public, verifiable receipt.
 
 [Live demo](https://kairo.dev) · [Demo video](#) · [Documentation](./docs/PRODUCT.md) · [Architecture](./docs/ARCHITECTURE.md)
 
@@ -16,9 +14,9 @@ Built for the **[OpenPandora Early Forge](https://aomi.dev)** — Aerodrome trac
 
 **The pattern.** A consent layer that sits between autonomous agents and the user's wallet. Three guarantees:
 
-1. **On-chain policy enforcement.** Your policy lives in `KairoPolicy.sol` on Base Sepolia. The off-chain engine *reads* from it as the source of truth — your leash can't be silently rewritten by a compromised server.
+1. **On-chain policy enforcement.** Your policy lives in `KairoPolicy.sol` on Base. The off-chain engine *reads* from it as the source of truth — your leash can't be silently rewritten by a compromised server.
 2. **Aerodrome-native rules.** Generic spend caps aren't enough for LP. Kairo's policy primitives include min APR delta, max impermanent loss tolerance, pool allowlist, gauge allowlist, and an auto-claim threshold.
-3. **Simulation-first.** Every proposal is simulated against live chain state before the user is asked. Aligned with [Aomi's transaction pipeline](https://aomi.dev/docs/about-aomi) — no surprise calldata, no waste-gas reverts.
+3. **Simulation-first.** Every proposal is simulated against live chain state before the user is asked. No surprise calldata, no waste-gas reverts.
 
 ---
 
@@ -35,32 +33,44 @@ The persona is **Mei**, a part-time LP with ~$5k across 2–3 Aerodrome pools wh
 
 ---
 
-## What's verifiable today
+## What ships today
 
 | Capability | Status |
 |---|---|
 | Policy engine, LP-aware rules | ✅ `16/16` TypeScript tests |
+| Plain-English policy parser | ✅ `23/23` TypeScript tests |
 | On-chain policy registry | ✅ `17/17` Solidity tests (`contracts/`) |
-| Aerodrome reads on Base mainnet | ✅ live verified |
-| Receipt minting + public pages | ✅ `/r/<hash>` with OG images |
-| Next.js dashboard | ✅ prod build passes |
-| wagmi + RainbowKit wallet connect | ✅ |
 | `KairoPolicy.sol` deployed to Base Sepolia | ✅ [`0xE080…B13A`](https://sepolia.basescan.org/address/0xE08065110d0d7E63582942447973f895bC35B13A) |
-| Telegram approval bot via Aomi runtime | ⏳ week 2 |
-| MCP server for any-agent integration | ⏳ week 2 |
-| ERC-8004 agent identity | ⏳ week 2 |
+| Aerodrome reads on Base mainnet | ✅ live verified |
+| Live gauge intelligence (Voter + Gauge contracts) | ✅ vote-weighted APR estimation |
+| Receipt minting + public pages | ✅ `/r/<hash>` with OG-card images |
+| Next.js dashboard (Positions, Agents, Policy, Receipts, Arena) | ✅ prod build passes |
+| wagmi + RainbowKit wallet connect | ✅ |
+| MCP server for any agent (Claude / Cursor / ElizaOS / OpenClaw) | ✅ `apps/mcp/` |
+| Rogue Steward 3-scenario demo | ✅ `pnpm rogue 0x…` |
+| Steward agent cron loop with real on-chain signals | ✅ `agents/steward/` |
+| Rust plugin alternative to MCP | 🟡 planned post-v1 |
+| ERC-8004 agent identity | 🟡 planned post-v1 |
+| On-chain `setPolicy()` write flow from the dashboard | 🟡 planned this week |
 
 ---
 
 ## The "Rogue Steward" demo
 
-Three scenarios, one wallet:
+Three scenarios, one wallet, ninety seconds:
 
 1. **Auto-approved.** Steward proposes a $200 rebalance with +5.2% APR delta. Within policy. Auto-executes. Receipt logged.
-2. **Asks first.** Steward proposes a $1,500 rebalance. Over the per-action cap. Routed to the user — Telegram in week 2, in-app prompt today.
+2. **Asks first.** Steward proposes a $1,500 rebalance. Over the per-action cap. Routed to the user — receipt lands as `pending_user`. User taps Approve in the dashboard.
 3. **Blocked.** Steward proposes adding liquidity to a pool not on the user's allowlist. Denied at the policy layer. Receipt records the rejected attempt with the exact rule that triggered.
 
-The receipt page is the share artifact. Mei can post it on Farcaster, tweet it, screenshot it for friends. The audit trail is a product surface.
+Run it locally:
+
+```bash
+pnpm dev                   # in one terminal
+pnpm rogue 0xYourWallet    # in another
+```
+
+Three receipts appear in the dashboard within seconds. Each one has a public shareable URL with an OG-card preview optimized for Twitter/Farcaster.
 
 ---
 
@@ -69,24 +79,29 @@ The receipt page is the share artifact. Mei can post it on Farcaster, tweet it, 
 ```
                      ┌──────────────────────┐
                      │   Aerodrome Steward  │
-                     │   (Aomi-hosted, v2)  │
+                     │   (Node cron, v1)    │
                      └──────────┬───────────┘
                                 │ proposal (typed)
                                 ▼
    ┌──────────────────────────────────────────────────┐
-   │  Kairo (Next.js, Vercel)                         │
+   │  Kairo API (Next.js, Vercel)                     │
    │  ┌─────────────┐  ┌────────────┐  ┌──────────┐  │
    │  │ Policy      │  │ Simulator  │  │ Receipts │  │
-   │  │ engine      │←─│ (Anvil     │─→│ (public, │  │
-   │  │             │  │  fork)     │  │  signed) │  │
+   │  │ engine      │←─│ (viem +    │─→│ (public, │  │
+   │  │             │  │  Anvil)    │  │  signed) │  │
    │  └──────┬──────┘  └────────────┘  └──────────┘  │
    └─────────┼────────────────────────────────────────┘
              │ reads source of truth
              ▼
    ┌──────────────────────────────┐    ┌─────────────────┐
-   │ KairoPolicy.sol (Base Sepolia)│    │ Aerodrome       │
+   │ KairoPolicy.sol (Base Sepolia)│   │ Aerodrome       │
    │  immutable rule registry      │    │ (Base mainnet)  │
    └──────────────────────────────┘    └─────────────────┘
+
+                                  ┌──────────────────────┐
+   MCP-compatible agents ─────────│  Kairo MCP server    │
+   (Claude · Cursor · ElizaOS)    │  five typed tools    │
+                                  └──────────────────────┘
 ```
 
 Full system diagram and trust boundaries in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
@@ -97,17 +112,17 @@ Full system diagram and trust boundaries in [`docs/ARCHITECTURE.md`](./docs/ARCH
 
 ```
 kairo/
-├── apps/web/                # Next.js 15 — dashboard, public receipts, API
+├── apps/
+│   ├── web/                 # Next.js 15 — dashboard, public receipts, API
+│   └── mcp/                 # MCP server for any MCP-compatible agent
 ├── packages/
-│   ├── policy/              # LP-aware policy engine (pure TS, 16 tests)
-│   ├── sdk/                 # TS client for agents + the web app
-│   └── ui/                  # Shared shadcn primitives
+│   ├── policy/              # LP-aware policy engine (pure TS, 39 tests)
+│   └── sdk/                 # Aerodrome SDK — live reads, gauge intelligence
 ├── contracts/               # KairoPolicy.sol + Foundry tests (17 tests)
 ├── agents/
-│   └── steward/             # The Aerodrome LP autopilot
-├── plugins/
-│   └── aerodrome/           # Rust plugin for Aomi runtime (week 2)
-└── docs/                    # Product, architecture, brand, roadmap
+│   └── steward/             # The Aerodrome LP autopilot (Node cron)
+├── scripts/                 # Smoke tests, demo seeds, Rogue Steward
+└── docs/                    # Product, architecture, brand, roadmap, how-to
 ```
 
 ---
@@ -119,14 +134,14 @@ pnpm install
 pnpm --filter web exec prisma db push        # local SQLite
 pnpm dev                                      # http://localhost:3000
 
-# Seed the dashboard with demo receipts (in another terminal)
-pnpm seed:demo 0xYourWallet
+# Seed the dashboard with three demo receipts (in another terminal)
+pnpm rogue 0xYourWallet
 
 # Run the contract test suite
 pnpm contracts:test
 ```
 
-Optional: run the Steward agent loop against a real Base wallet:
+Optional: run the Steward agent loop against a real Base wallet that holds Aerodrome LP positions:
 
 ```bash
 STEWARD_WALLET=0xYourWallet pnpm steward
@@ -138,16 +153,32 @@ STEWARD_WALLET=0xYourWallet pnpm steward
 
 - **Aerodrome-native policy primitives.** APR delta thresholds, impermanent loss tolerance, pool/gauge allowlists, auto-claim limits. Rules that actually mean something for LP, not generic spend caps.
 - **On-chain enforcement on Base.** `KairoPolicy.sol` is the source of truth; the off-chain engine reads from it and refuses to forward any action that exceeds the rules.
-- **Simulation-first proposals.** Every action is forked-simulated against live chain state before the user is asked. No surprise calldata, no waste-gas reverts.
+- **Simulation-first proposals.** Every action is forked-simulated against live chain state before the user is asked.
 - **Public, shareable receipts.** Every decision becomes a URL with an OG-card preview. The audit trail is a product surface, not a debugging tool.
-- **Plain-English policy.** Type your leash in natural language — "rebalance up to $500, only if APR uplift beats 4%, auto-claim under $50" — and Kairo parses it into structured rules.
+- **Plain-English policy.** Type your leash in natural language — *"rebalance up to $500, only if APR uplift beats 4%, auto-claim under $50"* — and Kairo parses it into structured rules.
+- **Agent-runtime portable.** Kairo exposes its policy engine and Aerodrome intelligence via an MCP server. Any MCP-compatible agent (Claude, Cursor, ElizaOS, OpenClaw, Nanobot) can ask Kairo *"would this action be allowed?"* before broadcasting.
+
+---
+
+## Use with any agent runtime
+
+Kairo is non-custodial and runtime-agnostic. The agent that proposes actions can be:
+
+- A locally-running Node cron (what ships in v1, `agents/steward/`)
+- A Claude Code or Cursor session calling Kairo's MCP tools
+- An ElizaOS / OpenClaw agent via the same MCP server
+- A future Rust plugin for the Aomi runtime
+- Your own custom agent — just POST proposals to `/api/proposals`
+
+The leash is the same in every case. The user's wallet never leaves their custody.
 
 ---
 
 ## Acknowledgements
 
-- **[Aomi Labs](https://aomi.dev)** — for the runtime + simulation pipeline + Telegram surface that makes the Steward agent possible.
 - **[Aerodrome](https://aerodrome.finance)** — the LP venue Kairo is built around.
+- **[Base](https://base.org)** — the L2 Kairo settles on.
+- **[Foundry](https://book.getfoundry.sh)**, **[wagmi](https://wagmi.sh)**, **[viem](https://viem.sh)**, **[shadcn/ui](https://ui.shadcn.com)** — the tools that made shipping this in days, not months, possible.
 
 ## License
 

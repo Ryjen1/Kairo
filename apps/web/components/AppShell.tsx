@@ -22,7 +22,7 @@ const nav = [
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   return (
     <div className="relative min-h-screen">
       <div className="absolute inset-0 grid-pattern opacity-30 pointer-events-none" />

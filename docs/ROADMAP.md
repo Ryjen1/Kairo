@@ -43,7 +43,7 @@ Goal: a real, working product. Not a mockup, not a slide deck. A user can connec
 - [ ] Final polish pass
 - [ ] Mainnet flag for read-only demo on real positions
 - [ ] Blog post: "How Kairo turns Aerodrome into a policy-gated agent surface"
-- [ ] Submit to OpenPandora Early Forge form
+- [ ] Submit to active hackathons / grant programs
 - [ ] Push for GitHub stars
 
 ## Phase 4: Post-submission (retainer track)
