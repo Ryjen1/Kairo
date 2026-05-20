@@ -7,7 +7,9 @@ license.workspace = true
 rust-version.workspace = true
 
 [lib]
-crate-type = ["cdylib"]
+# `cdylib` is what the Aomi runtime hot-loads. `rlib` lets integration tests
+# import the crate's public modules through Rust's normal linker.
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 aomi-sdk = { workspace = true }
@@ -15,3 +17,6 @@ reqwest = { workspace = true }
 schemars = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+
+[dev-dependencies]
+reqwest = { workspace = true }

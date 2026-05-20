@@ -14,7 +14,7 @@ use serde_json::{Value, json};
 /*                            get_positions(wallet)                           */
 /* -------------------------------------------------------------------------- */
 
-pub(crate) struct GetPositions;
+pub struct GetPositions;
 
 impl DynAomiTool for GetPositions {
     type App = KairoAerodromeApp;
@@ -42,7 +42,7 @@ impl DynAomiTool for GetPositions {
 /*                       get_gauge_signal(pools[])                            */
 /* -------------------------------------------------------------------------- */
 
-pub(crate) struct GetGaugeSignal;
+pub struct GetGaugeSignal;
 
 impl DynAomiTool for GetGaugeSignal {
     type App = KairoAerodromeApp;
@@ -82,7 +82,7 @@ impl DynAomiTool for GetGaugeSignal {
 /*                       get_policy(wallet, agent_id)                         */
 /* -------------------------------------------------------------------------- */
 
-pub(crate) struct GetPolicy;
+pub struct GetPolicy;
 
 impl DynAomiTool for GetPolicy {
     type App = KairoAerodromeApp;
@@ -114,7 +114,7 @@ impl DynAomiTool for GetPolicy {
 /*                      propose_action(...) -> receipt                        */
 /* -------------------------------------------------------------------------- */
 
-pub(crate) struct ProposeAction;
+pub struct ProposeAction;
 
 impl DynAomiTool for ProposeAction {
     type App = KairoAerodromeApp;
@@ -183,7 +183,7 @@ impl DynAomiTool for ProposeAction {
 /*                          get_receipt(hash)                                 */
 /* -------------------------------------------------------------------------- */
 
-pub(crate) struct GetReceipt;
+pub struct GetReceipt;
 
 impl DynAomiTool for GetReceipt {
     type App = KairoAerodromeApp;
