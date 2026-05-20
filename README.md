@@ -49,11 +49,11 @@ The persona is **Mei**, a part-time LP with ~$5k across 2–3 Aerodrome pools wh
 | MCP server for any agent (Claude / Cursor / ElizaOS / OpenClaw) | ✅ `apps/mcp/` |
 | Rogue Steward 3-scenario demo | ✅ `pnpm rogue 0x…` |
 | Steward agent cron loop with real on-chain signals | ✅ `agents/steward/` |
-| Rust plugin for the Aomi runtime (5 typed tools) | ✅ `plugins/aerodrome/` — builds cdylib against `aomi-sdk v0.1.21` |
-| Plugin integration tests via `aomi-sdk::testing` harness | ✅ `6/6` tests passing against a live backend |
+| Rust plugin for the Aomi runtime (5 typed tools) | ✅ `plugins/aerodrome/` — builds cdylib against `aomi-sdk v0.1.19` |
+| Plugin integration tests via `aomi_sdk::testing::run_tool` harness | ✅ `6/6` tests passing against a live backend |
+| Plugin runtime tests via `dlopen` + raw C ABI | ✅ `5/5` tests passing — same call path the production Aomi runtime uses |
 | ERC-8004 agent identity | 🟡 planned post-v1 |
 | On-chain `setPolicy()` write flow from the dashboard | 🟡 planned this week |
-| Publish plugin upstream to `aomi-labs/aomi-sdk` apps/ | 🟡 PR pending |
 
 ---
 
@@ -223,6 +223,37 @@ Six tests pass — each one invokes a real `DynAomiTool` through
 `aomi_sdk::testing::run_tool` (the same codepath the runtime uses), fires
 real HTTP at the local backend, asserts the response shape. No mocks
 anywhere.
+
+**6. The compiled cdylib responds to the *exact* C ABI the Aomi runtime uses.**
+
+```bash
+cargo build -p kairo-aerodrome --release
+cargo test  -p kairo-aerodrome --test test_runtime -- --test-threads=1 --nocapture
+```
+
+Five tests pass. They:
+
+1. `dlopen` the compiled `libkairo_aerodrome.so`
+2. Resolve all seven required FFI symbols (`aomi_create`, `aomi_destroy`,
+   `aomi_manifest`, `aomi_async_tool_start`, `aomi_dyn_exec_poll`,
+   `aomi_free_string`, `aomi_sdk_version`)
+3. Call `aomi_manifest()` and verify the returned JSON declares five
+   tools, each with a name, description, and JSON-Schema for its
+   parameters — exactly what the LLM consumes
+4. Call `aomi_async_tool_start()` for valid and invalid inputs and verify
+   the SDK dispatch router accepts/rejects them correctly
+5. Confirm well-formed calls dispatch all the way through to the HTTP
+   client (which fails with a connection error against a dead port —
+   proving the path is real and not short-circuited)
+
+**This is the same code path the production Aomi runtime uses.** The only
+difference between this test and the runtime is the runtime calls the
+same symbols from a separate process after loading the plugin from a
+published GitHub Release.
+
+Captured output: [`docs/evidence/aomi-runtime-test-output.txt`](docs/evidence/aomi-runtime-test-output.txt)
+Captured manifest JSON the runtime would feed to the LLM:
+[`docs/evidence/aomi-plugin-manifest.json.txt`](docs/evidence/aomi-plugin-manifest.json.txt)
 
 ---
 
