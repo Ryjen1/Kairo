@@ -49,9 +49,11 @@ The persona is **Mei**, a part-time LP with ~$5k across 2–3 Aerodrome pools wh
 | MCP server for any agent (Claude / Cursor / ElizaOS / OpenClaw) | ✅ `apps/mcp/` |
 | Rogue Steward 3-scenario demo | ✅ `pnpm rogue 0x…` |
 | Steward agent cron loop with real on-chain signals | ✅ `agents/steward/` |
-| Rust plugin for the Aomi runtime (5 typed tools) | ✅ `plugins/aerodrome/` (cdylib builds clean) |
+| Rust plugin for the Aomi runtime (5 typed tools) | ✅ `plugins/aerodrome/` — builds cdylib against `aomi-sdk v0.1.21` |
+| Plugin integration tests via `aomi-sdk::testing` harness | ✅ `6/6` tests passing against a live backend |
 | ERC-8004 agent identity | 🟡 planned post-v1 |
 | On-chain `setPolicy()` write flow from the dashboard | 🟡 planned this week |
+| Publish plugin upstream to `aomi-labs/aomi-sdk` apps/ | 🟡 PR pending |
 
 ---
 
@@ -150,6 +152,77 @@ Optional: run the Steward agent loop against a real Base wallet that holds Aerod
 ```bash
 STEWARD_WALLET=0xYourWallet pnpm steward
 ```
+
+---
+
+## Verify it's not mocked
+
+Every layer of Kairo is reproducible from a clean clone. Each block below is a
+single command anyone can run and check.
+
+**1. The on-chain policy registry is live on Base Sepolia.**
+
+```bash
+cast call 0xE08065110d0d7E63582942447973f895bC35B13A \
+  "totalUpdates()(uint256)" \
+  --rpc-url https://sepolia.base.org
+```
+
+Or open the explorer: [Basescan](https://sepolia.basescan.org/address/0xE08065110d0d7E63582942447973f895bC35B13A).
+
+**2. Aerodrome reads are real Base mainnet data.**
+
+```bash
+pnpm smoke:aerodrome
+# resolves the live WETH/USDC pool, prints real reserves at the current block
+```
+
+**3. The policy engine round-trips real proposals.**
+
+```bash
+pnpm dev                                                  # terminal 1
+curl -X POST http://localhost:3000/api/proposals \        # terminal 2
+  -H "content-type: application/json" \
+  -d '{ "id": "verify-1", "kind": "rebalance", "agentId": "steward",
+        "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0beB1",
+        "createdAt": 1747750000000,
+        "summary": "verify: round-trip", "amountUsd": 200,
+        "fromPool": "0xcDAC0d6c6C59727a65F871236188350531885C43",
+        "toPool":   "0x4D69971CCd4A636c403a3C1B00c85e99bB9B5606",
+        "projectedAprDeltaBps": 500, "projectedImpermanentLossBps": 100,
+        "simulation": { "success": true, "gasUsed": "220000",
+                        "tokenDeltas": [], "blockNumber": "0" } }'
+```
+
+You get back a content-addressed receipt hash and a `/r/<hash>` URL.
+
+**4. The Aomi plugin compiles against the real upstream SDK and produces a real cdylib.**
+
+```bash
+cargo build -p kairo-aerodrome --release
+file target/release/libkairo_aerodrome.so
+# -> ELF 64-bit LSB shared object, x86-64, dynamically linked
+nm -D --defined-only target/release/libkairo_aerodrome.so | grep aomi_
+# -> aomi_create, aomi_destroy, aomi_manifest, aomi_sdk_version, ...
+```
+
+These are the FFI symbols the Aomi runtime loads via `dlopen`. The SDK at
+`vendor/aomi-sdk/` is a git submodule pointing at the upstream
+`aomi-labs/aomi-sdk` repository.
+
+**5. Every plugin tool executes through the SDK's official test harness.**
+
+```bash
+pnpm dev                                                  # terminal 1
+KAIRO_API_URL=http://localhost:3000 cargo test \          # terminal 2
+  -p kairo-aerodrome --test integration \
+  -- --test-threads=1 --nocapture
+```
+
+Six tests pass — each one invokes a real `DynAomiTool` through
+`aomi_sdk::testing::run_tool` (the same codepath the runtime uses), fires
+real HTTP at the local backend, asserts the response shape. No mocks
+anywhere.
 
 ---
 

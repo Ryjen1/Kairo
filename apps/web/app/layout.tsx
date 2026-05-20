@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
   ),
   manifest: "/manifest.webmanifest",
-  themeColor: "#0B0B0E",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -28,6 +27,12 @@ export const metadata: Metadata = {
     description:
       "Your agent acts. Kairo decides. Consent and policy for autonomous LP on Base.",
   },
+};
+
+// Next 15 moved themeColor / colorScheme out of `metadata` and into `viewport`.
+export const viewport: Viewport = {
+  themeColor: "#0B0B0E",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
