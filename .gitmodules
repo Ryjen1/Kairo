@@ -1,0 +1,3 @@
+[submodule "vendor/aomi-sdk"]
+	path = vendor/aomi-sdk
+	url = https://github.com/aomi-labs/aomi-sdk.git
