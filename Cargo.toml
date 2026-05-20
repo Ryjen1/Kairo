@@ -1,0 +1,31 @@
+[workspace]
+members = [
+    "plugins/aerodrome",
+    "vendor/aomi-sdk/sdk",
+]
+exclude = [
+    # Vendor workspace members we don't need at top-level — depend on the SDK only.
+    "vendor/aomi-sdk/sdk/examples/hello-app",
+    "vendor/aomi-sdk/sdk/examples/app-template-http",
+    "vendor/aomi-sdk/xtask",
+    "vendor/aomi-sdk/ext",
+    "vendor/aomi-sdk/aomi-build",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+rust-version = "1.91"
+
+[workspace.dependencies]
+# Match aomi-sdk's pinned versions so the dependency graph resolves cleanly.
+aomi-sdk = { path = "vendor/aomi-sdk/sdk" }
+# Transitively required by aomi-sdk's own workspace inheritance.
+eyre = "0.6.12"
+tracing = "0.1"
+# Our plugin's direct deps.
+reqwest = { version = "0.13", default-features = false, features = ["blocking", "charset", "http2", "json", "query", "rustls"] }
+schemars = "1.0.4"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.141"

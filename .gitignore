@@ -37,9 +37,10 @@ coverage
 # vercel
 .vercel
 
-# rust (for plugins/aerodrome later)
+# rust (plugins/aerodrome workspace)
 target
-Cargo.lock
+# Cargo.lock IS committed for the plugin workspace so the cdylib build is
+# fully reproducible against pinned dep versions.
 
 # foundry
 contracts/cache

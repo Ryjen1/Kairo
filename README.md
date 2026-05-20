@@ -49,7 +49,7 @@ The persona is **Mei**, a part-time LP with ~$5k across 2–3 Aerodrome pools wh
 | MCP server for any agent (Claude / Cursor / ElizaOS / OpenClaw) | ✅ `apps/mcp/` |
 | Rogue Steward 3-scenario demo | ✅ `pnpm rogue 0x…` |
 | Steward agent cron loop with real on-chain signals | ✅ `agents/steward/` |
-| Rust plugin alternative to MCP | 🟡 planned post-v1 |
+| Rust plugin for the Aomi runtime (5 typed tools) | ✅ `plugins/aerodrome/` (cdylib builds clean) |
 | ERC-8004 agent identity | 🟡 planned post-v1 |
 | On-chain `setPolicy()` write flow from the dashboard | 🟡 planned this week |
 
@@ -121,6 +121,10 @@ kairo/
 ├── contracts/               # KairoPolicy.sol + Foundry tests (17 tests)
 ├── agents/
 │   └── steward/             # The Aerodrome LP autopilot (Node cron)
+├── plugins/
+│   └── aerodrome/           # Native Aomi runtime plugin (Rust cdylib, aomi-sdk)
+├── vendor/
+│   └── aomi-sdk/            # Submodule: github.com/aomi-labs/aomi-sdk
 ├── scripts/                 # Smoke tests, demo seeds, Rogue Steward
 └── docs/                    # Product, architecture, brand, roadmap, how-to
 ```
@@ -167,7 +171,7 @@ Kairo is non-custodial and runtime-agnostic. The agent that proposes actions can
 - A locally-running Node cron (what ships in v1, `agents/steward/`)
 - A Claude Code or Cursor session calling Kairo's MCP tools
 - An ElizaOS / OpenClaw agent via the same MCP server
-- A future Rust plugin for the Aomi runtime
+- The **Aomi runtime** via the native Rust plugin at `plugins/aerodrome/` (5 typed tools, `aomi-sdk` cdylib)
 - Your own custom agent — just POST proposals to `/api/proposals`
 
 The leash is the same in every case. The user's wallet never leaves their custody.
