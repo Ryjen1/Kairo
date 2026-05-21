@@ -46,13 +46,19 @@ export default function LandingPage() {
           <Logo />
           <nav className="flex items-center gap-2 text-sm">
             <Link
+              href="/aomi"
+              className="hidden sm:inline-flex rounded-lg px-3.5 py-2 font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              Aomi plugin
+            </Link>
+            <Link
               href="/arena"
               className="hidden sm:inline-flex rounded-lg px-3.5 py-2 font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
               Arena
             </Link>
             <a
-              href="https://github.com/"
+              href="https://github.com/Ryjen1/Kairo"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex rounded-lg px-3.5 py-2 font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"

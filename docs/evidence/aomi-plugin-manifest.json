@@ -1,4 +1,3 @@
-manifest:
 {
   "name": "kairo-aerodrome",
   "namespaces": [],
@@ -118,3 +117,126 @@ manifest:
           },
           "from_pool": {
             "description": "Source pool for a rebalance. Omit for non-rebalance actions.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gauge": {
+            "description": "Gauge address (vote_for_gauge only).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "description": "Kind of action. One of: rebalance | claim_rewards | swap |\nadd_liquidity | remove_liquidity | vote_for_gauge.",
+            "type": "string"
+          },
+          "pool": {
+            "description": "Pool address (claim_rewards / add_liquidity / remove_liquidity).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projected_apr_delta_bps": {
+            "description": "Projected APR delta in basis points (rebalance only). Kairo's policy\nengine checks this against the user's `minAprDeltaBps`.",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "projected_impermanent_loss_bps": {
+            "description": "Projected impermanent loss in basis points (rebalance only).",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "slippage_bps": {
+            "description": "Slippage in basis points (swap only).",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "summary": {
+            "description": "Human-readable one-line summary — surfaces in the receipt UI.",
+            "type": "string"
+          },
+          "to_pool": {
+            "description": "Destination pool for a rebalance. Omit for non-rebalance actions.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "token_in": {
+            "description": "Token in (swap only).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "token_out": {
+            "description": "Token out (swap only).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "wallet": {
+            "description": "Wallet that owns this action.",
+            "type": "string"
+          },
+          "weight_bps": {
+            "description": "Vote weight in basis points (vote_for_gauge only, 0-10000).",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "wallet",
+          "summary"
+        ],
+        "title": "ProposeActionArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    },
+    {
+      "app": "kairo-aerodrome",
+      "description": "Fetch a previously-finalized Kairo receipt by hash. Returns the full proposal, simulation result, the policy snapshot the decision was made against, the decision itself with every rule that was evaluated, and the on-chain tx hash if executed. Use this to check the status of a pending receipt or to cite a past decision.",
+      "name": "get_receipt",
+      "parameters_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Argument to `get_receipt`. Fetch a previously-decided receipt by hash.",
+        "properties": {
+          "hash": {
+            "description": "Receipt hash (0x-prefixed, 32 bytes hex).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hash"
+        ],
+        "title": "GetReceiptArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    }
+  ],
+  "version": "0.1.0"
+}

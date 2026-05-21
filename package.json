@@ -19,7 +19,9 @@
     "seed:demo": "tsx scripts/seed-demo-receipts.ts",
     "rogue": "tsx scripts/rogue-steward.ts",
     "contracts:build": "cd contracts && forge build",
-    "contracts:test": "cd contracts && forge test"
+    "contracts:test": "cd contracts && forge test",
+    "plugin:build": "cargo build -p kairo-aerodrome --release --example run_tool",
+    "plugin:test": "cargo test -p kairo-aerodrome --test test_runtime -- --test-threads=1 --nocapture"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

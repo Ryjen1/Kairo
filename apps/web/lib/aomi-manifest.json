@@ -1,0 +1,242 @@
+{
+  "name": "kairo-aerodrome",
+  "namespaces": [],
+  "preamble": "## Role\n\nYou are the Aerodrome Steward — an autonomous liquidity-position agent for a\nBase LP. You watch the user's Aerodrome positions, evaluate emission shifts,\nand propose rebalances / claims / votes. Every action you propose is gated\nby the user's on-chain Kairo policy.\n\n## Hard rules\n\n- You never custody funds. The user's wallet signs everything.\n- You never broadcast a transaction directly. You PROPOSE through\n  `propose_action`, and Kairo decides whether to auto-approve, queue for\n  the user, or deny.\n- If `propose_action` returns `status: requires_user_approval`, tell the\n  user the proposal is waiting for them in the Kairo dashboard.\n- If `propose_action` returns `status: denied`, explain which policy rule\n  failed (the response includes a `reason` field).\n\n## Workflow\n\n1. **Observe.** Call `get_positions` for the user's wallet to see their\n   current LP positions.\n2. **Diagnose.** For pools you might rebalance into, call `get_gauge_signal`\n   to read live vote-weighted APR from Aerodrome's Voter contract.\n3. **Plan.** If you see a meaningful APR delta (typically > 4%) between\n   the user's current pool and a candidate, draft a `rebalance` proposal.\n4. **Check.** Call `get_policy` to read the user's current leash so you\n   propose actions inside the rules rather than wasting a denial.\n5. **Propose.** Call `propose_action` with the typed proposal. Read the\n   returned receipt URL out loud.\n\n## Tone\n\nBe brief. The user is busy. Read APRs as percents, not basis points.\nAlways link the receipt page after a successful proposal.\n",
+  "sdk_version": "0.1.19",
+  "tools": [
+    {
+      "app": "kairo-aerodrome",
+      "description": "Read a wallet's live Aerodrome LP positions on Base mainnet. Returns pool address, symbol, USD value, share of pool, LP balance in wallet vs gauge, and earned AERO. Use this first to understand what the user is managing before proposing any action.",
+      "name": "get_positions",
+      "parameters_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Argument to `get_positions`.",
+        "properties": {
+          "wallet": {
+            "description": "EVM wallet address (0x-prefixed, 40 hex chars).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "wallet"
+        ],
+        "title": "WalletOnlyArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    },
+    {
+      "app": "kairo-aerodrome",
+      "description": "Read live vote-weighted APR and reward rate from Aerodrome's Voter and Gauge contracts for one or more pools. Use this to decide whether a rebalance is worth proposing — if the candidate pool's estimated APR beats the user's current pool by more than ~4%, propose. Returns per-pool: voteShareBps, estimatedAprBps, tvlUsd.",
+      "name": "get_gauge_signal",
+      "parameters_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Argument to `get_gauge_signal`. Pass one or more pool addresses to read\nlive vote-weighted APR for each.",
+        "properties": {
+          "pools": {
+            "description": "One or more Aerodrome pool contract addresses (0x-prefixed).",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "pools"
+        ],
+        "title": "GaugeSignalArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    },
+    {
+      "app": "kairo-aerodrome",
+      "description": "Read the user's current Kairo policy for a given agent. The policy mirrors KairoPolicy.sol on Base Sepolia and contains the mode (ask_every / allow_under_limits / block), spend caps, pool/gauge allowlists, min APR delta threshold, max impermanent loss tolerance, and auto-claim limit. Call this before propose_action so you draft proposals that fit the leash.",
+      "name": "get_policy",
+      "parameters_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Argument to `get_policy`. Reads the leash for a (wallet, agent) pair.",
+        "properties": {
+          "agent_id": {
+            "default": "steward",
+            "description": "Agent identifier. Default to \"steward\" if the user hasn't installed\na different agent — that's the only one Kairo ships in v1.",
+            "type": "string"
+          },
+          "wallet": {
+            "description": "EVM wallet address (0x-prefixed).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "wallet"
+        ],
+        "title": "GetPolicyArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    },
+    {
+      "app": "kairo-aerodrome",
+      "description": "Submit a proposed Aerodrome action to Kairo for evaluation. Kairo simulates the action, checks it against the user's on-chain policy, and returns one of three outcomes: auto_approved (within policy, executes), pending_user (over a limit, queued in the dashboard for the user), or denied (violates a hard rule). The response includes a receipt hash and a public URL the user can visit to inspect the decision. This tool never executes a transaction directly — the user's wallet signs separately.",
+      "name": "propose_action",
+      "parameters_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Argument to `propose_action`. The shape mirrors Kairo's POST\n`/api/proposals` body so the runtime forwards the agent's typed\nproposal directly without re-encoding.",
+        "properties": {
+          "amount_in_usd": {
+            "description": "Amount in USD (swap only).",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "amount_usd": {
+            "description": "USD value of the action. Required for rebalance / add_liquidity /\nremove_liquidity. Kairo evaluates this against the spend cap.",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "estimated_reward_usd": {
+            "description": "Estimated reward USD for claim_rewards.",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "expected_amount_out_usd": {
+            "description": "Expected amount out in USD (swap only).",
+            "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "from_pool": {
+            "description": "Source pool for a rebalance. Omit for non-rebalance actions.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gauge": {
+            "description": "Gauge address (vote_for_gauge only).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "description": "Kind of action. One of: rebalance | claim_rewards | swap |\nadd_liquidity | remove_liquidity | vote_for_gauge.",
+            "type": "string"
+          },
+          "pool": {
+            "description": "Pool address (claim_rewards / add_liquidity / remove_liquidity).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projected_apr_delta_bps": {
+            "description": "Projected APR delta in basis points (rebalance only). Kairo's policy\nengine checks this against the user's `minAprDeltaBps`.",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "projected_impermanent_loss_bps": {
+            "description": "Projected impermanent loss in basis points (rebalance only).",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "slippage_bps": {
+            "description": "Slippage in basis points (swap only).",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "summary": {
+            "description": "Human-readable one-line summary — surfaces in the receipt UI.",
+            "type": "string"
+          },
+          "to_pool": {
+            "description": "Destination pool for a rebalance. Omit for non-rebalance actions.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "token_in": {
+            "description": "Token in (swap only).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "token_out": {
+            "description": "Token out (swap only).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "wallet": {
+            "description": "Wallet that owns this action.",
+            "type": "string"
+          },
+          "weight_bps": {
+            "description": "Vote weight in basis points (vote_for_gauge only, 0-10000).",
+            "format": "uint32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "wallet",
+          "summary"
+        ],
+        "title": "ProposeActionArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    },
+    {
+      "app": "kairo-aerodrome",
+      "description": "Fetch a previously-finalized Kairo receipt by hash. Returns the full proposal, simulation result, the policy snapshot the decision was made against, the decision itself with every rule that was evaluated, and the on-chain tx hash if executed. Use this to check the status of a pending receipt or to cite a past decision.",
+      "name": "get_receipt",
+      "parameters_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "description": "Argument to `get_receipt`. Fetch a previously-decided receipt by hash.",
+        "properties": {
+          "hash": {
+            "description": "Receipt hash (0x-prefixed, 32 bytes hex).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "hash"
+        ],
+        "title": "GetReceiptArgs",
+        "type": "object"
+      },
+      "supports_async": false
+    }
+  ],
+  "version": "0.1.0"
+}
