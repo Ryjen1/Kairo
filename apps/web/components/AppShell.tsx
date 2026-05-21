@@ -9,6 +9,7 @@ import {
   Scale,
   Receipt,
   Trophy,
+  MessageSquare,
 } from "lucide-react";
 import { Logo } from "./logo";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const nav = [
   { href: "/app/agents", label: "Agents", icon: Bot },
   { href: "/app/policy", label: "Policy", icon: Scale },
   { href: "/app/receipts", label: "Receipts", icon: Receipt },
+  { href: "/app/chat", label: "Chat", icon: MessageSquare },
   { href: "/arena", label: "Arena", icon: Trophy, external: true },
 ];
 
