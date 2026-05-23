@@ -146,6 +146,15 @@
     100% { background-position: 200% 0; }
   }
 
+  /* Streaming-event reveal — used in the /demo terminal */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.18s ease-out forwards;
+  }
+
   /* Status badges — Kairo-specific status palette */
   .status-auto-approved,
   .status-approved {

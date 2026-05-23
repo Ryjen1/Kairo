@@ -52,6 +52,12 @@ export default function LandingPage() {
               Aomi plugin
             </Link>
             <Link
+              href="/demo"
+              className="hidden sm:inline-flex rounded-lg px-3.5 py-2 font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              Live demo
+            </Link>
+            <Link
               href="/arena"
               className="hidden sm:inline-flex rounded-lg px-3.5 py-2 font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
             >
