@@ -24,6 +24,9 @@ aomi-sdk = { path = "vendor/aomi-sdk/sdk" }
 # Transitively required by aomi-sdk's own workspace inheritance.
 eyre = "0.6.12"
 tracing = "0.1"
+# JSON-line tracing output for the live SDK demo stream. Used only by the
+# `run_tool` example binary; the cdylib doesn't link it.
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
 # Our plugin's direct deps.
 reqwest = { version = "0.13", default-features = false, features = ["blocking", "charset", "http2", "json", "query", "rustls"] }
 schemars = "1.0.4"

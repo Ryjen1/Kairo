@@ -9,6 +9,7 @@
 use crate::client::*;
 use aomi_sdk::*;
 use serde_json::{Value, json};
+use tracing::info;
 
 /* -------------------------------------------------------------------------- */
 /*                            get_positions(wallet)                           */
@@ -30,10 +31,13 @@ impl DynAomiTool for GetPositions {
         args: Self::Args,
         _ctx: DynToolCallCtx,
     ) -> Result<Value, String> {
+        info!(stage = "tool.start", tool = "get_positions", wallet = %args.wallet, "tool dispatch begin");
         validate_wallet(&args.wallet)?;
+        info!(stage = "args.ok", tool = "get_positions", "args validated");
         let client = KairoClient::new()?;
         let path = format!("/api/wallets/{}/positions", args.wallet);
         let body = client.get_json(&path)?;
+        info!(stage = "tool.ok", tool = "get_positions", "tool returning Ok");
         Ok(body)
     }
 }
@@ -58,12 +62,14 @@ impl DynAomiTool for GetGaugeSignal {
         args: Self::Args,
         _ctx: DynToolCallCtx,
     ) -> Result<Value, String> {
+        info!(stage = "tool.start", tool = "get_gauge_signal", pools = args.pools.len(), "tool dispatch begin");
         if args.pools.is_empty() {
             return Err("at least one pool address is required".to_string());
         }
         for p in &args.pools {
             validate_address(p, "pool")?;
         }
+        info!(stage = "args.ok", tool = "get_gauge_signal", "all pool addresses validated");
         let client = KairoClient::new()?;
         // Backend exposes gauge intelligence via a query-string list.
         let query = args
@@ -74,6 +80,7 @@ impl DynAomiTool for GetGaugeSignal {
             .join("&");
         let path = format!("/api/gauges?{query}");
         let body = client.get_json(&path)?;
+        info!(stage = "tool.ok", tool = "get_gauge_signal", "tool returning Ok");
         Ok(body)
     }
 }
@@ -99,13 +106,16 @@ impl DynAomiTool for GetPolicy {
         args: Self::Args,
         _ctx: DynToolCallCtx,
     ) -> Result<Value, String> {
+        info!(stage = "tool.start", tool = "get_policy", wallet = %args.wallet, agent_id = %args.agent_id, "tool dispatch begin");
         validate_wallet(&args.wallet)?;
         if args.agent_id.trim().is_empty() {
             return Err("agent_id cannot be empty".to_string());
         }
+        info!(stage = "args.ok", tool = "get_policy", "args validated");
         let client = KairoClient::new()?;
         let path = format!("/api/policies/{}/{}", args.wallet, args.agent_id);
         let body = client.get_json(&path)?;
+        info!(stage = "tool.ok", tool = "get_policy", "policy retrieved");
         Ok(body)
     }
 }
@@ -132,14 +142,28 @@ impl DynAomiTool for ProposeAction {
         args: Self::Args,
         _ctx: DynToolCallCtx,
     ) -> Result<Value, String> {
+        info!(
+            stage = "tool.start",
+            tool = "propose_action",
+            kind = %args.kind,
+            wallet = %args.wallet,
+            "tool dispatch begin"
+        );
         validate_wallet(&args.wallet)?;
         validate_kind(&args.kind)?;
         if args.summary.trim().is_empty() {
             return Err("summary cannot be empty — it is what the user sees on the receipt".into());
         }
+        info!(
+            stage = "args.ok",
+            tool = "propose_action",
+            summary = %args.summary,
+            "args validated"
+        );
 
         // Map snake_case Aomi args to the Kairo API's camelCase wire shape.
         let proposal = build_proposal_payload(&args)?;
+        info!(stage = "payload.built", tool = "propose_action", "wire payload built");
 
         let client = KairoClient::new()?;
         let body = client.post_json("/api/proposals", &proposal)?;
@@ -168,6 +192,16 @@ impl DynAomiTool for ProposeAction {
             .and_then(Value::as_str)
             .unwrap_or("")
             .to_string();
+
+        info!(
+            stage = "policy.decision",
+            tool = "propose_action",
+            status = %status,
+            executed,
+            reason = %reason,
+            "policy engine returned decision"
+        );
+        info!(stage = "tool.ok", tool = "propose_action", "tool returning Ok");
 
         Ok(json!({
             "status": status,
@@ -199,12 +233,15 @@ impl DynAomiTool for GetReceipt {
         args: Self::Args,
         _ctx: DynToolCallCtx,
     ) -> Result<Value, String> {
+        info!(stage = "tool.start", tool = "get_receipt", hash = %args.hash, "tool dispatch begin");
         if !args.hash.starts_with("0x") {
             return Err("hash must be 0x-prefixed".to_string());
         }
+        info!(stage = "args.ok", tool = "get_receipt", "args validated");
         let client = KairoClient::new()?;
         let path = format!("/api/receipts/{}", args.hash);
         let body = client.get_json(&path)?;
+        info!(stage = "tool.ok", tool = "get_receipt", "receipt retrieved");
         Ok(body)
     }
 }

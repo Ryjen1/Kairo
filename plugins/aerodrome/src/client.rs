@@ -1,7 +1,8 @@
 use aomi_sdk::schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::Value;
-use std::time::Duration;
+use std::time::{Duration, Instant};
+use tracing::info;
 
 /// The Aomi app handle. Stateless — every tool call constructs a fresh
 /// `KairoClient`. State lives in the Kairo backend, not here.
@@ -34,6 +35,9 @@ impl KairoClient {
 
     pub fn get_json(&self, path: &str) -> Result<Value, String> {
         let url = format!("{}{}", self.base, path);
+        info!(stage = "http.send", method = "GET", url = %url, "sending request to Kairo API");
+
+        let started = Instant::now();
         let response = self
             .http
             .get(&url)
@@ -41,28 +45,58 @@ impl KairoClient {
             .map_err(|e| format!("kairo GET {url}: {e}"))?;
 
         let status = response.status();
+        let elapsed_ms = started.elapsed().as_millis() as u64;
+        info!(
+            stage = "http.recv",
+            status = status.as_u16(),
+            elapsed_ms,
+            "Kairo API responded"
+        );
+
         let body = response.text().unwrap_or_default();
         if !status.is_success() {
             return Err(format!("kairo {url} -> {status}: {body}"));
         }
+
+        info!(stage = "decode", bytes = body.len(), "decoding JSON response");
         serde_json::from_str(&body).map_err(|e| format!("kairo decode failed: {e}"))
     }
 
     pub fn post_json(&self, path: &str, body: &Value) -> Result<Value, String> {
         let url = format!("{}{}", self.base, path);
+        let payload = serde_json::to_string(body).map_err(|e| format!("encode body: {e}"))?;
+        info!(
+            stage = "http.send",
+            method = "POST",
+            url = %url,
+            bytes = payload.len(),
+            "sending request to Kairo API"
+        );
+
+        let started = Instant::now();
         let response = self
             .http
             .post(&url)
             .header("content-type", "application/json")
-            .body(serde_json::to_string(body).map_err(|e| format!("encode body: {e}"))?)
+            .body(payload)
             .send()
             .map_err(|e| format!("kairo POST {url}: {e}"))?;
 
         let status = response.status();
+        let elapsed_ms = started.elapsed().as_millis() as u64;
+        info!(
+            stage = "http.recv",
+            status = status.as_u16(),
+            elapsed_ms,
+            "Kairo API responded"
+        );
+
         let text = response.text().unwrap_or_default();
         if !status.is_success() {
             return Err(format!("kairo {url} -> {status}: {text}"));
         }
+
+        info!(stage = "decode", bytes = text.len(), "decoding JSON response");
         serde_json::from_str(&text).map_err(|e| format!("kairo decode failed: {e}"))
     }
 }
