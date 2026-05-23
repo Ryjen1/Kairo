@@ -1,0 +1,139 @@
+{
+  "scenario": "a",
+  "events": [
+    {
+      "event": "scenario",
+      "data": {
+        "id": "a",
+        "label": "Within policy",
+        "intent": "Move $200 from vAMM-WETH/USDC to sAMM-USDC/USDbC with +5.2% APR uplift.",
+        "expectedStatus": "auto_approved"
+      },
+      "replayDelayMs": 80
+    },
+    {
+      "event": "stage",
+      "data": {
+        "stage": "runner.spawn",
+        "message": "spawning run_tool example binary with --trace",
+        "runner": "target/release/examples/run_tool",
+        "kairoApiUrl": "http://localhost:3000",
+        "t": 0
+      },
+      "replayDelayMs": 0
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 80,
+        "timestamp": "2026-05-23T10:45:11.045175Z",
+        "level": "INFO",
+        "message": "loaded kairo-aerodrome cdylib via aomi-sdk test harness",
+        "stage": "runner.start",
+        "tool": "propose_action"
+      },
+      "replayDelayMs": 80
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 81,
+        "timestamp": "2026-05-23T10:45:11.045963Z",
+        "level": "INFO",
+        "message": "tool dispatch begin",
+        "stage": "tool.start",
+        "tool": "propose_action",
+        "kind": "rebalance",
+        "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0beB1"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 82,
+        "timestamp": "2026-05-23T10:45:11.045978Z",
+        "level": "INFO",
+        "message": "args validated",
+        "stage": "args.ok",
+        "tool": "propose_action",
+        "summary": "Move $200 from vAMM-WETH/USDC to sAMM-USDC/USDbC (+5.2% APR)"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 82,
+        "timestamp": "2026-05-23T10:45:11.046552Z",
+        "level": "INFO",
+        "message": "wire payload built",
+        "stage": "payload.built",
+        "tool": "propose_action"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 165,
+        "timestamp": "2026-05-23T10:45:11.176964Z",
+        "level": "INFO",
+        "message": "sending request to Kairo API",
+        "stage": "http.send",
+        "method": "POST",
+        "url": "http://localhost:3000/api/proposals",
+        "bytes": 499
+      },
+      "replayDelayMs": 83
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 253,
+        "timestamp": "2026-05-23T10:45:11.266267Z",
+        "level": "INFO",
+        "message": "Kairo API responded",
+        "stage": "http.recv",
+        "status": 404,
+        "elapsed_ms": 89
+      },
+      "replayDelayMs": 88
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 253,
+        "timestamp": "2026-05-23T10:45:11.266510Z",
+        "level": "INFO",
+        "message": "tool returned an error",
+        "stage": "runner.done",
+        "outcome": "err",
+        "error": "kairo http://localhost:3000/api/proposals -> 404 Not Found: "
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "result",
+      "data": {
+        "envelope": {
+          "result": {
+            "Err": "kairo http://localhost:3000/api/proposals -> 404 Not Found: "
+          },
+          "status": "ready",
+          "tool": "propose_action"
+        }
+      },
+      "replayDelayMs": 80
+    },
+    {
+      "event": "done",
+      "data": {
+        "ok": true,
+        "exitCode": 0,
+        "totalMs": 260
+      },
+      "replayDelayMs": 80
+    }
+  ]
+}

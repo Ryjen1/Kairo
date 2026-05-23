@@ -61,6 +61,7 @@ interface StageEvent {
   tool?: string;
   t?: number;
   timestamp?: string;
+  replay?: boolean;
   [key: string]: unknown;
 }
 
@@ -91,6 +92,7 @@ export default function DemoPage() {
   const [stages, setStages] = useState<StageEvent[]>([]);
   const [receipt, setReceipt] = useState<ReceiptInfo | null>(null);
   const [envelope, setEnvelope] = useState<ResultEnvelope | null>(null);
+  const [isReplay, setIsReplay] = useState(false);
   const [stats, setStats] = useState({
     totalReceipts: 0,
     autoApproved: 0,
@@ -143,6 +145,7 @@ export default function DemoPage() {
     setStages([]);
     setReceipt(null);
     setEnvelope(null);
+    setIsReplay(false);
 
     const es = new EventSource(`/api/demo/stream?scenario=${scenario.id}`);
     sourceRef.current = es;
@@ -170,6 +173,7 @@ export default function DemoPage() {
     es.addEventListener("stage", (evt) => {
       try {
         const data = JSON.parse((evt as MessageEvent).data) as StageEvent;
+        if (data.replay === true) setIsReplay(true);
         setStages((prev) => [...prev, data]);
       } catch {
         /* ignore */
@@ -329,15 +333,26 @@ export default function DemoPage() {
                 kairo-aerodrome.so · {activeScenario ? `scenario ${activeScenario.id}` : "idle"}
               </span>
               <div className="flex items-center gap-2">
-                {status === "streaming" && (
+                {status === "streaming" && !isReplay && (
                   <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-cyan-400">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
                     LIVE
                   </span>
                 )}
-                {status === "ok" && (
+                {status === "streaming" && isReplay && (
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-violet-400">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-violet-400" />
+                    ▶ REPLAY
+                  </span>
+                )}
+                {status === "ok" && !isReplay && (
                   <span className="font-mono text-[10px] text-emerald-400">
                     ● READY
+                  </span>
+                )}
+                {status === "ok" && isReplay && (
+                  <span className="font-mono text-[10px] text-violet-400">
+                    ● REPLAY DONE
                   </span>
                 )}
                 {status === "err" && (
@@ -425,6 +440,19 @@ export default function DemoPage() {
             )}
           </div>
 
+          {isReplay && (
+            <p className="mt-3 font-mono text-[11px] leading-relaxed text-slate-500">
+              <span className="text-violet-400">▶ </span>
+              This deployment is replaying a captured trace from a real local
+              SDK run. The events, timestamps, decisions and receipt hashes
+              you see were produced by a real{" "}
+              <span className="text-foreground">aomi_sdk::testing::run_tool</span>{" "}
+              dispatch against our compiled cdylib. To watch a fresh live
+              dispatch, clone the repo and run{" "}
+              <span className="text-foreground">pnpm dev</span> locally.
+            </p>
+          )}
+
           {envelope && (
             <details className="mt-3 text-xs">
               <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
@@ -501,6 +529,7 @@ function classifyStage(event: StageEvent): LogLevel {
   const stage = String(event.stage ?? "");
   if (event.level === "ERROR" || stage.endsWith(".failed")) return "error";
   if (stage === "scenario.start") return "header";
+  if (stage === "replay.banner") return "warning";
 
   if (stage === "policy.decision") {
     const decisionStatus = String(event["status"] ?? "");

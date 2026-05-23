@@ -1,6 +1,60 @@
+import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { getOrCreatePolicy, upsertPolicy } from "@/lib/storage";
+
+import scenarioAFixture from "@/lib/demo-fixtures/scenario-a.json";
+import scenarioBFixture from "@/lib/demo-fixtures/scenario-b.json";
+import scenarioCFixture from "@/lib/demo-fixtures/scenario-c.json";
+
+interface ReplayEvent {
+  event: string;
+  data: unknown;
+  replayDelayMs: number;
+}
+
+const FIXTURES: Record<"a" | "b" | "c", { events: ReplayEvent[] }> = {
+  a: scenarioAFixture as { scenario: string; events: ReplayEvent[] },
+  b: scenarioBFixture as { scenario: string; events: ReplayEvent[] },
+  c: scenarioCFixture as { scenario: string; events: ReplayEvent[] },
+};
+
+/**
+ * Replay a captured fixture as if the binary had just produced it.
+ *
+ * Used when the cdylib runner isn't on disk (Vercel et al). Each event
+ * is sent with its original timing relative to the run start. The
+ * `replay: true` flag is added to every emit so the UI can render an
+ * honest "▶ REPLAY · captured from real local run" banner instead of
+ * pretending a live dispatch is happening.
+ */
+async function runReplay(
+  scenarioId: "a" | "b" | "c",
+  startedAt: number,
+  emit: (event: string, data: unknown) => void,
+): Promise<void> {
+  const fixture = FIXTURES[scenarioId];
+
+  emit("stage", {
+    stage: "replay.banner",
+    message:
+      "binary not deployed here; replaying a captured trace from a real local SDK run",
+    replay: true,
+    t: Date.now() - startedAt,
+  });
+
+  for (const ev of fixture.events) {
+    if (ev.replayDelayMs > 0) {
+      await new Promise((r) => setTimeout(r, ev.replayDelayMs));
+    }
+    // Stamp every payload with the replay marker
+    const payload =
+      ev.data && typeof ev.data === "object"
+        ? { ...(ev.data as Record<string, unknown>), replay: true }
+        : ev.data;
+    emit(ev.event, payload);
+  }
+}
 
 /**
  * `GET /api/demo/stream?scenario=a|b|c`
@@ -173,6 +227,46 @@ export async function GET(req: Request) {
         process.env.KAIRO_API_URL ??
         process.env.NEXT_PUBLIC_APP_URL ??
         "http://localhost:3000";
+
+      // If the cdylib runner is not on disk (e.g. on Vercel where there's
+      // no cargo toolchain), fall back to replaying a captured fixture from
+      // a real local run. The events have the same shape and the same
+      // timestamps; we mark each with `replay: true` and emit a single
+      // banner stage so the UI can be honest about the source.
+      const liveBinaryAvailable = (() => {
+        try {
+          return fs.statSync(runner).isFile();
+        } catch {
+          return false;
+        }
+      })();
+
+      if (!liveBinaryAvailable) {
+        await runReplay(scenario.id, startedAt, emit);
+
+        // Reset allowlist if we tightened it (replay didn't touch the DB
+        // for scenario C, but the tighten earlier did)
+        if (touchedPolicy) {
+          try {
+            const policy = await getOrCreatePolicy(DEMO_WALLET, "steward");
+            await upsertPolicy({
+              ...policy,
+              rules: { ...policy.rules, poolAllowlist: [] },
+            });
+          } catch {
+            /* best-effort */
+          }
+        }
+
+        emit("done", {
+          ok: true,
+          exitCode: 0,
+          replay: true,
+          totalMs: Date.now() - startedAt,
+        });
+        controller.close();
+        return;
+      }
 
       emit("stage", {
         stage: "runner.spawn",

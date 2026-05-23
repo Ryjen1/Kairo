@@ -1,0 +1,157 @@
+{
+  "scenario": "c",
+  "events": [
+    {
+      "event": "scenario",
+      "data": {
+        "id": "c",
+        "label": "Pool not allow-listed",
+        "intent": "Add $150 liquidity to a pool that's not on the wallet's allowlist. Policy should flag it.",
+        "expectedStatus": "denied_by_policy"
+      },
+      "replayDelayMs": 80
+    },
+    {
+      "event": "stage",
+      "data": {
+        "stage": "policy.tighten",
+        "message": "tightening wallet poolAllowlist for scenario C",
+        "t": 0
+      },
+      "replayDelayMs": 0
+    },
+    {
+      "event": "stage",
+      "data": {
+        "stage": "runner.spawn",
+        "message": "spawning run_tool example binary with --trace",
+        "runner": "target/release/examples/run_tool",
+        "kairoApiUrl": "http://localhost:3000",
+        "t": 56
+      },
+      "replayDelayMs": 56
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 70,
+        "timestamp": "2026-05-23T10:45:11.497153Z",
+        "level": "INFO",
+        "message": "loaded kairo-aerodrome cdylib via aomi-sdk test harness",
+        "stage": "runner.start",
+        "tool": "propose_action"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 70,
+        "timestamp": "2026-05-23T10:45:11.497192Z",
+        "level": "INFO",
+        "message": "tool dispatch begin",
+        "stage": "tool.start",
+        "tool": "propose_action",
+        "kind": "add_liquidity",
+        "wallet": "0x742d35Cc6634C0532925a3b844Bc9e7595f0beB1"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 70,
+        "timestamp": "2026-05-23T10:45:11.497202Z",
+        "level": "INFO",
+        "message": "args validated",
+        "stage": "args.ok",
+        "tool": "propose_action",
+        "summary": "Add $150 liquidity to an unknown pool"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 70,
+        "timestamp": "2026-05-23T10:45:11.497217Z",
+        "level": "INFO",
+        "message": "wire payload built",
+        "stage": "payload.built",
+        "tool": "propose_action"
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 83,
+        "timestamp": "2026-05-23T10:45:11.510392Z",
+        "level": "INFO",
+        "message": "sending request to Kairo API",
+        "stage": "http.send",
+        "method": "POST",
+        "url": "http://localhost:3000/api/proposals",
+        "bytes": 474
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 85,
+        "timestamp": "2026-05-23T10:45:11.512175Z",
+        "level": "INFO",
+        "message": "Kairo API responded",
+        "stage": "http.recv",
+        "status": 404,
+        "elapsed_ms": 1
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "stage",
+      "data": {
+        "t": 85,
+        "timestamp": "2026-05-23T10:45:11.512477Z",
+        "level": "INFO",
+        "message": "tool returned an error",
+        "stage": "runner.done",
+        "outcome": "err",
+        "error": "kairo http://localhost:3000/api/proposals -> 404 Not Found: "
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "result",
+      "data": {
+        "envelope": {
+          "result": {
+            "Err": "kairo http://localhost:3000/api/proposals -> 404 Not Found: "
+          },
+          "status": "ready",
+          "tool": "propose_action"
+        }
+      },
+      "replayDelayMs": 80
+    },
+    {
+      "event": "stage",
+      "data": {
+        "stage": "policy.relax",
+        "message": "allowlist restored to default (empty)",
+        "t": 91
+      },
+      "replayDelayMs": 30
+    },
+    {
+      "event": "done",
+      "data": {
+        "ok": true,
+        "exitCode": 0,
+        "totalMs": 91
+      },
+      "replayDelayMs": 80
+    }
+  ]
+}
