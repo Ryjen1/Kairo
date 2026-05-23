@@ -9,11 +9,8 @@ import {
   Clock,
   ExternalLink,
   Play,
-  ShieldCheck,
   Sparkles,
-  Terminal,
   XCircle,
-  Zap,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 
@@ -303,53 +300,79 @@ export default function DemoPage() {
           </div>
         </section>
 
-        {/* Streaming terminal */}
+        {/* Streaming terminal — SentinelPay-style retro real-code aesthetic */}
         <section className="mx-auto max-w-3xl pb-10">
-          <div className="glass-card overflow-hidden">
-            <div className="flex items-center justify-between border-b border-border/50 px-5 py-3">
-              <div className="flex items-center gap-2">
-                <Terminal className="h-3.5 w-3.5 text-primary" />
-                <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                  kairo-aerodrome.so · live trace
-                </span>
+          <div
+            className="overflow-hidden rounded-2xl border border-white/[0.07] shadow-2xl"
+            style={{ backgroundColor: "#06060e" }}
+          >
+            {/* macOS-style chrome bar */}
+            <div
+              className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3"
+              style={{ backgroundColor: "#040408" }}
+            >
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "#FF5F57" }}
+                />
+                <div
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "#FEBC2E" }}
+                />
+                <div
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: "#28C840" }}
+                />
               </div>
-              <div className="flex items-center gap-3">
+              <span className="font-mono text-[10px] text-slate-600">
+                kairo-aerodrome.so · {activeScenario ? `scenario ${activeScenario.id}` : "idle"}
+              </span>
+              <div className="flex items-center gap-2">
                 {status === "streaming" && (
-                  <span className="inline-flex items-center gap-1.5 text-[10px] text-primary">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                    streaming
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-cyan-400">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400" />
+                    LIVE
                   </span>
                 )}
                 {status === "ok" && (
-                  <span className="inline-flex items-center gap-1 text-[10px] text-primary">
-                    <CheckCircle2 className="h-3 w-3" /> done
+                  <span className="font-mono text-[10px] text-emerald-400">
+                    ● READY
                   </span>
                 )}
                 {status === "err" && (
-                  <span className="inline-flex items-center gap-1 text-[10px] text-deny">
-                    <AlertCircle className="h-3 w-3" /> error
+                  <span className="font-mono text-[10px] text-rose-400">
+                    ● ERR
                   </span>
                 )}
                 {stages.length > 0 && status !== "streaming" && (
                   <button
                     onClick={reset}
-                    className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+                    className="font-mono text-[10px] text-slate-600 hover:text-slate-300"
                   >
-                    reset
+                    [reset]
                   </button>
                 )}
               </div>
             </div>
 
+            {/* Log output */}
             <div
               ref={terminalRef}
-              className="h-[400px] overflow-y-auto bg-surface-2/40 p-5 font-mono text-[11px] leading-relaxed"
+              className="overflow-y-auto p-5"
+              style={{
+                fontFamily:
+                  "var(--font-mono), 'JetBrains Mono', ui-monospace, monospace",
+                fontSize: "0.78rem",
+                lineHeight: "1.8",
+                minHeight: "16rem",
+                maxHeight: "26rem",
+              }}
             >
               {stages.length === 0 && status === "idle" && (
-                <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
-                  <ShieldCheck className="h-6 w-6 opacity-30" />
-                  <p>Pick a scenario above to dispatch through the real SDK.</p>
-                </div>
+                <span className="text-slate-700">
+                  {`// Pick a scenario above to dispatch through the real Aomi SDK plugin.`}
+                </span>
               )}
 
               {stages.map((s, i) => (
@@ -357,25 +380,28 @@ export default function DemoPage() {
               ))}
 
               {status === "streaming" && (
-                <div className="mt-2 text-muted-foreground">
-                  <span className="inline-block h-3 w-1.5 animate-pulse bg-primary" />
-                </div>
+                <span className="cursor-blink ml-0.5 text-cyan-400">▋</span>
               )}
             </div>
 
-            {/* Receipt banner */}
+            {/* Receipt banner — keeps inside the terminal container so it
+                feels like an output footer, not a separate card */}
             {receipt && (
-              <div className="border-t border-border/50 bg-primary/5 px-5 py-3">
+              <div
+                className="border-t border-white/[0.06] px-5 py-4"
+                style={{ backgroundColor: "#080812" }}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Zap className="h-4 w-4 text-primary" />
-                    <span className="text-foreground">Receipt minted</span>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-emerald-400">
+                      ► receipt
+                    </span>
                     {receipt.status && (
-                      <span className="rounded-sm bg-primary/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-primary">
+                      <span className="rounded-sm bg-emerald-500/[0.08] px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-emerald-400">
                         {receipt.status.replace(/_/g, " ")}
                       </span>
                     )}
-                    <span className="mono text-xs text-muted-foreground">
+                    <span className="font-mono text-xs text-slate-400">
                       {receipt.hash.slice(0, 10)}…{receipt.hash.slice(-6)}
                     </span>
                   </div>
@@ -383,14 +409,15 @@ export default function DemoPage() {
                     href={receipt.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:bg-emerald-glow"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-cyan-400/40 bg-cyan-500/[0.08] px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-cyan-300 transition-colors hover:bg-cyan-500/[0.15] hover:text-cyan-200"
                   >
-                    View receipt
+                    open /r/{receipt.hash.slice(2, 8)}
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </div>
                 {receipt.reason && (
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-2 font-mono text-[11px] text-slate-500">
+                    <span className="text-slate-600">// </span>
                     {receipt.reason}
                   </p>
                 )}
@@ -447,63 +474,98 @@ export default function DemoPage() {
 /* -------------------------------------------------------------------------- */
 /*                            Stage line                                       */
 /* -------------------------------------------------------------------------- */
+//
+// Single line in the terminal. Rendered as one row of:
+//   [+0042ms] stage.name › message  · field1=v1 · field2=v2
+//
+// Color follows a simple level palette (SentinelPay-style):
+//   info     → blue        (#60a5fa)
+//   success  → green       (#4ade80)
+//   warning  → yellow      (#facc15)
+//   error    → red         (#f87171)
+//   muted    → slate       (#64748b)
+//   header   → cyan        (#22d3ee)  — for scenario.start
+
+type LogLevel = "info" | "success" | "warning" | "error" | "muted" | "header";
+
+const LOG_COLOR: Record<LogLevel, string> = {
+  info: "#60a5fa",
+  success: "#4ade80",
+  warning: "#facc15",
+  error: "#f87171",
+  muted: "#64748b",
+  header: "#22d3ee",
+};
+
+function classifyStage(event: StageEvent): LogLevel {
+  const stage = String(event.stage ?? "");
+  if (event.level === "ERROR" || stage.endsWith(".failed")) return "error";
+  if (stage === "scenario.start") return "header";
+
+  if (stage === "policy.decision") {
+    const decisionStatus = String(event["status"] ?? "");
+    if (decisionStatus === "auto_approved") return "success";
+    if (decisionStatus === "pending_user") return "warning";
+    if (decisionStatus.startsWith("denied")) return "error";
+    return "info";
+  }
+
+  if (stage === "tool.ok" || stage === "runner.done") return "success";
+  if (stage === "policy.tighten" || stage === "policy.relax") return "muted";
+  if (stage === "http.send" || stage === "http.recv" || stage === "decode") return "muted";
+  if (stage.startsWith("tool.") || stage === "args.ok" || stage === "payload.built") {
+    return "info";
+  }
+  if (stage === "runner.start" || stage === "runner.spawn") return "info";
+  return "muted";
+}
+
+function formatTimestamp(t: number | null): string {
+  if (t === null) return "         ";
+  // Pad to 5 chars (e.g. " 0042" for 42ms, " 6750" for 6.7s) so columns align.
+  return `+${String(t).padStart(5)}ms`;
+}
 
 function StageLine({ event }: { event: StageEvent }) {
   const stage = String(event.stage ?? "");
   const message = String(event.message ?? "");
   const t = typeof event.t === "number" ? event.t : null;
   const elapsed = typeof event.elapsed_ms === "number" ? event.elapsed_ms : null;
-  const status = typeof event.status === "number" ? event.status : null;
+  const httpStatus =
+    typeof event.status === "number" ? event.status : null;
+  const decisionStatus =
+    stage === "policy.decision" && typeof event.status === "string"
+      ? (event.status as string)
+      : null;
 
-  // Tone the line based on stage
-  const tone: "primary" | "warn" | "deny" | "neutral" | "muted" = (() => {
-    if (stage === "policy.decision") {
-      const decisionStatus = String(event["status"] ?? "");
-      if (decisionStatus === "auto_approved") return "primary";
-      if (decisionStatus === "pending_user") return "warn";
-      if (decisionStatus.startsWith("denied")) return "deny";
-      return "neutral";
-    }
-    if (stage === "tool.ok" || stage === "runner.done") return "primary";
-    if (stage.endsWith(".failed") || event.level === "ERROR") return "deny";
-    if (stage === "scenario.start") return "neutral";
-    if (stage === "http.send" || stage === "http.recv") return "muted";
-    if (stage.startsWith("tool.") || stage.startsWith("runner.") || stage === "args.ok") {
-      return "neutral";
-    }
-    return "muted";
-  })();
+  const level = classifyStage(event);
+  const color = LOG_COLOR[level];
 
-  const toneClass = {
-    primary: "text-primary",
-    warn: "text-warn",
-    deny: "text-deny",
-    neutral: "text-foreground",
-    muted: "text-muted-foreground",
-  }[tone];
-
-  // Build a compact fields suffix for the interesting numeric fields
-  const fieldsList: string[] = [];
-  if (elapsed !== null) fieldsList.push(`${elapsed}ms`);
-  if (status !== null) fieldsList.push(`HTTP ${status}`);
+  // Build a compact suffix of relevant fields
+  const fields: string[] = [];
+  if (elapsed !== null) fields.push(`${elapsed}ms`);
+  if (httpStatus !== null) fields.push(`HTTP ${httpStatus}`);
   if (typeof event.method === "string" && typeof event.url === "string") {
-    fieldsList.push(`${event.method} ${shortenUrl(event.url)}`);
+    fields.push(`${event.method} ${shortenUrl(event.url)}`);
   }
-  if (typeof event.tool === "string" && stage.startsWith("tool.")) {
-    fieldsList.push(`tool=${event.tool}`);
+  if (decisionStatus) fields.push(decisionStatus);
+  if (typeof event.bytes === "number") fields.push(`${event.bytes}B`);
+  if (
+    typeof event.tool === "string" &&
+    (stage === "tool.start" || stage === "runner.start")
+  ) {
+    fields.push(`tool=${event.tool}`);
   }
-  if (typeof event.bytes === "number") fieldsList.push(`${event.bytes}B`);
-  const suffix = fieldsList.length > 0 ? `  · ${fieldsList.join(" · ")}` : "";
+  const suffix = fields.length > 0 ? `  · ${fields.join(" · ")}` : "";
 
+  // Render: dim grey timestamp, dim grey stage name, bright message, dim suffix.
   return (
-    <div className={`${toneClass} animate-fade-in`}>
-      <span className="text-muted-foreground/60">
-        {t !== null ? `+${String(t).padStart(4)}ms ` : "       "}
-      </span>
-      <span className="text-muted-foreground/80">{stage || event.level || "·"}</span>
-      <span className="text-muted-foreground/60"> › </span>
-      <span>{message}</span>
-      <span className="text-muted-foreground/60">{suffix}</span>
+    <div className="animate-fade-in whitespace-pre-wrap break-words">
+      <span style={{ color: "#475569" }}>[{formatTimestamp(t)}] </span>
+      <span style={{ color: "#64748b" }}>{stage || "·"} </span>
+      <span style={{ color: "#475569" }}>›</span>
+      <span style={{ color }}> {message}</span>
+      <span style={{ color: "#475569" }}>{suffix}</span>
     </div>
   );
 }
